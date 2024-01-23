@@ -230,6 +230,11 @@ func (bc *FileCache) EnableMetrics() error {
 	return err
 }
 
+func (s *refCloser) Height() uint64 {
+	return s.accessor.Height
+}
+
+
 // refCloser manages references to accessor from provided reader and removes the ref, when the
 // Close is called
 type refCloser struct {

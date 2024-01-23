@@ -2,6 +2,7 @@ package shwap
 
 import (
 	"testing"
+	"os"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,6 +21,8 @@ func TestSample(t *testing.T) {
 
 	data, err := sample.MarshalBinary()
 	require.NoError(t, err)
+
+	os.WriteFile("sample3.data", data, 0644)
 
 	blk, err := sample.IPLDBlock()
 	require.NoError(t, err)

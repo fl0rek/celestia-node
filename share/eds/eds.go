@@ -76,6 +76,7 @@ func writeQuadrants(eds *rsmt2d.ExtendedDataSquare, w io.Writer) error {
 			return fmt.Errorf("hashing share: %w", err)
 		}
 		cid, err := ipld.CidFromNamespacedSha256(leaf)
+		println("writeQuadrants", cid.String())
 		if err != nil {
 			return fmt.Errorf("getting cid from share: %w", err)
 		}
@@ -95,8 +96,8 @@ func writeProofs(ctx context.Context, eds *rsmt2d.ExtendedDataSquare, w io.Write
 	if err != nil {
 		return fmt.Errorf("recomputing proofs: %w", err)
 	}
-
 	for id, proof := range proofs {
+		println("writeProofs", id.String())
 		err := util.LdWrite(w, id.Bytes(), proof)
 		if err != nil {
 			return fmt.Errorf("writing proof to the car: %w", err)

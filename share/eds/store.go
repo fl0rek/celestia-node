@@ -208,6 +208,7 @@ func (s *Store) watchForFailures(ctx context.Context) {
 // The resulting file stores all the shares and NMT Merkle Proofs of the EDS.
 // Additionally, the file gets indexed s.t. store.Blockstore can access them.
 func (s *Store) Put(ctx context.Context, root share.DataHash, square *rsmt2d.ExtendedDataSquare) error {
+	println("put 00000000")
 	ctx, span := tracer.Start(ctx, "store/put", trace.WithAttributes(
 		attribute.Int("width", int(square.Width())),
 	))

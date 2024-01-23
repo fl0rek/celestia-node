@@ -24,6 +24,8 @@ import (
 	"github.com/celestiaorg/celestia-node/share/p2p/shrexeds"
 	"github.com/celestiaorg/celestia-node/share/p2p/shrexnd"
 	"github.com/celestiaorg/celestia-node/share/p2p/shrexsub"
+
+	"github.com/celestiaorg/celestia-node/share/store"
 )
 
 func ConstructModule(tp node.Type, cfg *Config, options ...fx.Option) fx.Option {
@@ -83,7 +85,24 @@ func ConstructModule(tp node.Type, cfg *Config, options ...fx.Option) fx.Option 
 		fx.Provide(getters.NewStoreGetter),
 		fx.Invoke(func(edsSrv *shrexeds.Server, ndSrc *shrexnd.Server) {}),
 		fx.Provide(fx.Annotate(
-			func(host host.Host, store *eds.Store, network modp2p.Network) (*shrexeds.Server, error) {
+			func(path node.StorePath) (*store.Store, error) {
+				return store.NewStore(store.DefaultParameters(), string(path))
+			},
+			/*
+			fx.OnStart(func(ctx context.Context, store *store.Store) error {
+				//err := store.Start(ctx)
+				//if err != nil {
+					//return err
+				//}
+				return true // ensureEmptyCARExists(ctx, store)
+			}),
+			*/
+			fx.OnStop(func(ctx context.Context, store *store.Store) error {
+				return store.Close()
+			}),
+		)),
+		fx.Provide(fx.Annotate(
+			func(host host.Host, store *store.Store, network modp2p.Network) (*shrexeds.Server, error) {
 				cfg.ShrExEDSParams.WithNetworkID(network.String())
 				return shrexeds.NewServer(cfg.ShrExEDSParams, host, store)
 			},
@@ -97,7 +116,7 @@ func ConstructModule(tp node.Type, cfg *Config, options ...fx.Option) fx.Option 
 		fx.Provide(fx.Annotate(
 			func(
 				host host.Host,
-				store *eds.Store,
+				store *store.Store,
 				network modp2p.Network,
 			) (*shrexnd.Server, error) {
 				cfg.ShrExNDParams.WithNetworkID(network.String())

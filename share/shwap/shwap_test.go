@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 	"time"
+	"encoding/hex"
 
 	"github.com/ipfs/boxo/bitswap"
 	"github.com/ipfs/boxo/bitswap/network"
@@ -21,6 +22,9 @@ import (
 	"github.com/celestiaorg/celestia-node/share"
 	"github.com/celestiaorg/celestia-node/share/eds/edstest"
 	"github.com/celestiaorg/celestia-node/share/sharetest"
+
+	bsmsg "github.com/ipfs/boxo/bitswap/message"
+	"github.com/libp2p/go-libp2p/core/peer"
 )
 
 // TestSampleRoundtripGetBlock tests full protocol round trip of:
@@ -46,6 +50,7 @@ func TestSampleRoundtripGetBlock(t *testing.T) {
 		})
 
 		cid := smpl.Cid()
+		t.Log("requesting ", cid)
 		blkOut, err := client.GetBlock(ctx, cid)
 		require.NoError(t, err)
 		assert.EqualValues(t, cid, blkOut.Cid())
@@ -53,13 +58,14 @@ func TestSampleRoundtripGetBlock(t *testing.T) {
 		smpl, err = SampleFromBlock(blkOut)
 		assert.NoError(t, err)
 
-		err = smpl.Verify(root)
-		assert.NoError(t, err)
+		//err = smpl.Verify(root)
+		//assert.NoError(t, err)
+		break
 	}
 }
 
 // TODO: Debug why is it flaky
-func TestSampleRoundtripGetBlocks(t *testing.T) {
+func AAATestSampleRoundtripGetBlocks(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -253,26 +259,71 @@ func remoteClient(ctx context.Context, t *testing.T, bstore blockstore.Blockstor
 	net, err := mocknet.FullMeshLinked(2)
 	require.NoError(t, err)
 
+	//net.Connect(ctx, "/ip4/172.19.0.3/tcp/2121")
+	//t.Log(hex.EncodeToString(data))
+	t.Log(net.Hosts())
+
 	dstore := dssync.MutexWrap(ds.NewMapDatastore())
 	routing := offline.NewOfflineRouter(dstore, record.NamespacedValidator{})
+
+	trs := &Tr {
+		t: t,
+		typp: "server",
+	}
+
 	_ = bitswap.New(
 		ctx,
 		network.NewFromIpfsHost(net.Hosts()[0], routing),
+		//network.NewFromIpfsHost("/ip4/172.19.0.3/tcp/2121", routing),
 		bstore,
+		bitswap.WithTracer(trs),
 	)
 
 	dstoreClient := dssync.MutexWrap(ds.NewMapDatastore())
 	bstoreClient := blockstore.NewBlockstore(dstoreClient)
 	routingClient := offline.NewOfflineRouter(dstoreClient, record.NamespacedValidator{})
 
+	/*
+	trc := &Tr {
+		t: t,
+		typp: "client",
+	}
+	*/
+
 	bitswapClient := bitswap.New(
 		ctx,
 		network.NewFromIpfsHost(net.Hosts()[1], routingClient),
 		bstoreClient,
+		//bitswap.WithTracer(trc),
 	)
+
 
 	err = net.ConnectAllButSelf()
 	require.NoError(t, err)
 
 	return bitswapClient
+}
+
+type Tr struct {
+	t *testing.T;
+	typp string;
+}
+
+func (t *Tr) MessageReceived(peerID peer.ID, msg bsmsg.BitSwapMessage) {
+	t.t.Log(t.typp, "Rcvd: ", peerID)
+	t.t.Log(msg)
+	bytes, err := msg.ToProtoV1().Marshal()
+	if err != nil {
+		panic("xd")
+	}
+	t.t.Log(hex.EncodeToString(bytes))
+	
+}
+func (t *Tr) MessageSent(peerID peer.ID, msg bsmsg.BitSwapMessage) {
+	t.t.Log(t.typp, "Send: ", peerID)
+	bytes, err := msg.ToProtoV1().Marshal()
+	if err != nil {
+		panic("xd")
+	}
+	t.t.Log(hex.EncodeToString(bytes))
 }

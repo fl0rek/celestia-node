@@ -4,7 +4,7 @@ package header.pb;
 
 import "tendermint/types/types.proto";
 import "tendermint/types/validator.proto";
-import "celestia/da/data_availability_header.proto";
+import "celestia/core/v1/da/data_availability_header.proto";
 
 message ExtendedHeader {
   tendermint.types.Header header = 1;

@@ -2,6 +2,8 @@ package shwap
 
 import (
 	"testing"
+	"os"
+	"encoding/hex"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,11 +17,18 @@ func TestRow(t *testing.T) {
 	root, err := share.NewRoot(square)
 	require.NoError(t, err)
 
+	data, _ := os.ReadFile("/tmp/row.data")
+	row := &Row{}
+	row.UnmarshalBinary(data)
+
 	row, err := NewRowFromEDS(1, 2, square)
 	require.NoError(t, err)
 
 	data, err := row.MarshalBinary()
 	require.NoError(t, err)
+
+	os.WriteFile("row.data", data, 0644)
+	t.Log(hex.EncodeToString(data))
 
 	blk, err := row.IPLDBlock()
 	require.NoError(t, err)

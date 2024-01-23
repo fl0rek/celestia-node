@@ -21,6 +21,7 @@ import (
 	"github.com/celestiaorg/celestia-node/share/eds"
 	"github.com/celestiaorg/celestia-node/share/p2p"
 	p2p_pb "github.com/celestiaorg/celestia-node/share/p2p/shrexeds/pb"
+
 )
 
 // Server is responsible for serving ODSs for blocksync over the ShrEx/EDS protocol.

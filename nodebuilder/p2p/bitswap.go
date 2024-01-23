@@ -65,6 +65,7 @@ func dataExchange(params bitSwapParams) exchange.Interface {
 }
 
 func blockstoreFromDatastore(ctx context.Context, ds datastore.Batching) (blockstore.Blockstore, error) {
+	println("blockstoreFromDatastore")
 	return blockstore.CachedBlockstore(
 		ctx,
 		blockstore.NewBlockstore(ds),
@@ -77,6 +78,7 @@ func blockstoreFromDatastore(ctx context.Context, ds datastore.Batching) (blocks
 }
 
 func blockstoreFromEDSStore(ctx context.Context, store *eds.Store) (blockstore.Blockstore, error) {
+	println("blockstoreFromEdsstore")
 	return blockstore.CachedBlockstore(
 		ctx,
 		store.Blockstore(),

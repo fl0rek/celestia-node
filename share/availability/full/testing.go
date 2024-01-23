@@ -1,4 +1,5 @@
 package full
+/*
 
 import (
 	"context"
@@ -62,3 +63,4 @@ func TestAvailability(t *testing.T, getter share.Getter) *ShareAvailability {
 	})
 	return NewShareAvailability(store, getter, disc)
 }
+*/
